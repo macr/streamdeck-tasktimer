@@ -26,29 +26,33 @@ function connected(jsn) {
 // ACTIONS
 
 const action = {
-
     timers: {},
-    onDidReceiveSettings: function (jsn) {
+   onDidReceiveSettings: function (jsn) {
         console.log('[app.js]onDidReceiveSettings', jsn);
-
-        this.timers[jsn.context].updateSettings(jsn.payload.settings)
+     
+        if (this.timers[jsn.context]) {
+            this.timers[jsn.context].updateSettings(jsn.payload.settings);
+        }
     },
 
     onWillAppear: function (jsn) {
         console.log('onWillAppear', jsn.payload.settings);
-        let ctx = jsn.context
-        this.timers[ctx] = new Timer(jsn)
+        let ctx = jsn.context;
+        if (!this.timers[ctx]) {
+            this.timers[ctx] = new Timer(jsn);
+        } else {
+            this.timers[ctx].updateSettings(jsn.payload.settings);
+        }
     },
-
     onKeyDown: function (jsn) {
         let ctx = jsn.context
         let timer = this.timers[ctx]
         timer.keyDownMs = new Date().getTime()
     },
-
     onKeyUp: function (jsn) {
         const ctx = jsn.context
         const timer = this.timers[ctx]
+        if (!timer) return; 
 
         const currentMs = new Date().getTime()
         if (currentMs - timer.keyDownMs > 1200) {
