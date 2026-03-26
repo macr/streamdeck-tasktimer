@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-and-release:
@@ -22,5 +22,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/package.zip
+          files: dist/com.macr.streamdeck.tasktimer.streamDeckPlugin
           generate_release_notes: true
