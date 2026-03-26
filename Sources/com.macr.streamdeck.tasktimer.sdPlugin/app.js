@@ -11,14 +11,14 @@ $SD.on('connected', (jsonObj) => connected(jsonObj));
 
 function connected(jsn) {
     // Subscribe to the willAppear and other events
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.willAppear', (jsonObj) => action.onWillAppear(jsonObj));
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.keyDown', (jsonObj) => action.onKeyDown(jsonObj));
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.keyUp', (jsonObj) => action.onKeyUp(jsonObj));
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.didReceiveSettings', (jsonObj) => action.onDidReceiveSettings(jsonObj));
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.propertyInspectorDidAppear', (jsonObj) => {
+    $SD.on('com.macr.streamdeck.tasktimer.action.willAppear', (jsonObj) => action.onWillAppear(jsonObj));
+    $SD.on('com.macr.streamdeck.tasktimer.action.keyDown', (jsonObj) => action.onKeyDown(jsonObj));
+    $SD.on('com.macr.streamdeck.tasktimer.action.keyUp', (jsonObj) => action.onKeyUp(jsonObj));
+    $SD.on('com.macr.streamdeck.tasktimer.action.didReceiveSettings', (jsonObj) => action.onDidReceiveSettings(jsonObj));
+    $SD.on('com.macr.streamdeck.tasktimer.action.propertyInspectorDidAppear', (jsonObj) => {
         console.log('%c%s', 'color: white; background: black; font-size: 13px;', '[app.js]propertyInspectorDidAppear:');
     });
-    $SD.on('com.nagopy.streamdeck.tasktimer.action.propertyInspectorDidDisappear', (jsonObj) => {
+    $SD.on('com.macr.streamdeck.tasktimer.action.propertyInspectorDidDisappear', (jsonObj) => {
         console.log('%c%s', 'color: white; background: red; font-size: 13px;', '[app.js]propertyInspectorDidDisappear:');
     });
 }
@@ -47,33 +47,47 @@ const action = {
     onKeyDown: function (jsn) {
         let ctx = jsn.context
         let timer = this.timers[ctx]
-        timer.keyDownMs = new Date().getTime()
+        if (!timer) return;
+
+        timer.wasResetDuringLongPress = false
+        timer.longPressTimeout = setTimeout(() => {
+            timer.wasResetDuringLongPress = true
+            timer.resetTimer()
+            // Blink once as feedback using configured color
+            $SD.api.setImage(ctx, new SvgUrl(timer.config.blinkingColor).getUrl())
+            setTimeout(() => {
+                $SD.api.setImage(ctx, '')
+            }, 150)
+        }, 1200)
     },
     onKeyUp: function (jsn) {
         const ctx = jsn.context
         const timer = this.timers[ctx]
-        if (!timer) return; 
+        if (!timer) return;
 
-        const currentMs = new Date().getTime()
-        if (currentMs - timer.keyDownMs > 1200) {
-            timer.resetTimer()
-        } else {
-            switch (timer.status) {
-                case timerStatus.STANDBY:
-                    timer.startTimer()
-                    break
-                case timerStatus.RUNNING:
-                    timer.pauseTimer()
-                    break
-                case timerStatus.PAUSED:
-                    timer.startTimer()
-                    break
-                case timerStatus.FINISHED:
-                    timer.resetTimer()
-                    break
-                default:
-                    break
-            }
+        clearTimeout(timer.longPressTimeout)
+        timer.longPressTimeout = null
+
+        if (timer.wasResetDuringLongPress) {
+            timer.wasResetDuringLongPress = false
+            return
+        }
+
+        switch (timer.status) {
+            case timerStatus.STANDBY:
+                timer.startTimer()
+                break
+            case timerStatus.RUNNING:
+                timer.pauseTimer()
+                break
+            case timerStatus.PAUSED:
+                timer.startTimer()
+                break
+            case timerStatus.FINISHED:
+                timer.resetTimer()
+                break
+            default:
+                break
         }
     },
 };
