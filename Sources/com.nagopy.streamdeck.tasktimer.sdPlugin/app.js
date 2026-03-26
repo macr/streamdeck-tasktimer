@@ -199,6 +199,8 @@ class Timer {
         }
         if (this.sound) {
             this.sound.pause()
+            this.sound.src = ''
+            this.sound.load()
             this.sound = null
         }
         $SD.api.setImage(this.context, '')

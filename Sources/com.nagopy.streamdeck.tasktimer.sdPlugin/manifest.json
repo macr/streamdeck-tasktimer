@@ -1,7 +1,7 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionimage", 
+      "Icon": "action/images/actionimage",
       "Name": "Timer",
       "States": [
         {
@@ -9,15 +9,15 @@
           "TitleAlignment": "middle",
           "FontSize": "16"
         }
-      ], 
+      ],
       "Tooltip": "Show a simple timer",
-      "UUID": "com.nagopy.streamdeck.tasktimer.action"
+      "UUID": "com.macr.streamdeck.tasktimer.action"
     }
-  ], 
+  ],
   "SDKVersion": 2,
   "Author": "75py",
-  "CodePath": "index.html", 
-  "PropertyInspectorPath": "propertyinspector/index.html", 
+  "CodePath": "index.html",
+  "PropertyInspectorPath": "propertyinspector/index.html",
   "Description": "Simple timer app for Stream deck.",
   "Name": "Task Timer",
   "Icon": "pluginIcon",
@@ -27,16 +27,19 @@
   "Version": "1.2.0",
   "OS": [
     {
-        "Platform": "mac", 
-        "MinimumVersion" : "10.11"
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
     },
     {
-        "Platform": "windows", 
-        "MinimumVersion" : "10"
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "linux",
+      "MinimumVersion": "1.2.1"
     }
   ],
-  "Software": 
-    {
-        "MinimumVersion" : "4.1"
+  "Software": {
+    "MinimumVersion": "4.1"
   }
 }

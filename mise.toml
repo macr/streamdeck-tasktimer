@@ -1,0 +1,3 @@
+[tasks.package]
+description = "Build the package"
+run = "mkdir -p dist && pushd ./Sources && zip -FS -r ../dist/package.zip ./com.nagopy.streamdeck.tasktimer.sdPlugin/ && popd"
