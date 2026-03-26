@@ -24,7 +24,7 @@
   "Category": "Task Timer",
   "CategoryIcon": "categoryIcon",
   "URL": "https://github.com/75py/streamdeck-tasktimer",
-  "Version": "1.2.0",
+  "Version": "1.2.1",
   "OS": [
     {
       "Platform": "mac",
@@ -33,10 +33,6 @@
     {
       "Platform": "windows",
       "MinimumVersion": "10"
-    },
-    {
-      "Platform": "linux",
-      "MinimumVersion": "1.2.1"
     }
   ],
   "Software": {
