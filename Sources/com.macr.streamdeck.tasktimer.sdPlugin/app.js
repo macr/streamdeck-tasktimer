@@ -12,6 +12,7 @@ $SD.on('connected', (jsonObj) => connected(jsonObj));
 function connected(jsn) {
     // Subscribe to the willAppear and other events
     $SD.on('com.macr.streamdeck.tasktimer.action.willAppear', (jsonObj) => action.onWillAppear(jsonObj));
+    $SD.on('com.macr.streamdeck.tasktimer.action.willDisappear', (jsonObj) => action.onWillDisappear(jsonObj));
     $SD.on('com.macr.streamdeck.tasktimer.action.keyDown', (jsonObj) => action.onKeyDown(jsonObj));
     $SD.on('com.macr.streamdeck.tasktimer.action.keyUp', (jsonObj) => action.onKeyUp(jsonObj));
     $SD.on('com.macr.streamdeck.tasktimer.action.didReceiveSettings', (jsonObj) => action.onDidReceiveSettings(jsonObj));
@@ -44,10 +45,28 @@ const action = {
             this.timers[ctx].updateSettings(jsn.payload.settings);
         }
     },
+    onWillDisappear: function (jsn) {
+        let ctx = jsn.context;
+        let timer = this.timers[ctx];
+        if (timer) {
+            timer.cleanup();
+            delete this.timers[ctx];
+        }
+    },
     onKeyDown: function (jsn) {
         let ctx = jsn.context
         let timer = this.timers[ctx]
         if (!timer) return;
+
+        // Clear any existing timeouts from previous presses
+        if (timer.longPressTimeout) {
+            clearTimeout(timer.longPressTimeout)
+            timer.longPressTimeout = null
+        }
+        if (timer.blinkFeedbackTimeout) {
+            clearTimeout(timer.blinkFeedbackTimeout)
+            timer.blinkFeedbackTimeout = null
+        }
 
         timer.wasResetDuringLongPress = false
         timer.longPressTimeout = setTimeout(() => {
@@ -55,8 +74,9 @@ const action = {
             timer.resetTimer()
             // Blink once as feedback using configured color
             $SD.api.setImage(ctx, new SvgUrl(timer.config.blinkingColor).getUrl())
-            setTimeout(() => {
+            timer.blinkFeedbackTimeout = setTimeout(() => {
                 $SD.api.setImage(ctx, '')
+                timer.blinkFeedbackTimeout = null
             }, 150)
         }, 1200)
     },
@@ -151,6 +171,11 @@ class Timer {
     startTimer() {
         console.log('startTimer', this)
 
+        // Clear existing interval if any
+        if (this.countdown) {
+            clearInterval(this.countdown)
+        }
+
         this.countdown = setInterval(function () {
             console.log('tick')
 
@@ -221,6 +246,33 @@ class Timer {
         this.updateTitle(this.config.timerSec)
         this.remainingSec = this.config.timerSec
         this.status = timerStatus.STANDBY
+    }
+
+    cleanup() {
+        console.log('cleanup', this)
+
+        if (this.countdown) {
+            clearInterval(this.countdown)
+            this.countdown = null
+        }
+        if (this.blinkInterval) {
+            clearInterval(this.blinkInterval)
+            this.blinkInterval = null
+        }
+        if (this.blinkFeedbackTimeout) {
+            clearTimeout(this.blinkFeedbackTimeout)
+            this.blinkFeedbackTimeout = null
+        }
+        if (this.longPressTimeout) {
+            clearTimeout(this.longPressTimeout)
+            this.longPressTimeout = null
+        }
+        if (this.sound) {
+            this.sound.pause()
+            this.sound.src = ''
+            this.sound.load()
+            this.sound = null
+        }
     }
 
     updateTitle(sec) {
