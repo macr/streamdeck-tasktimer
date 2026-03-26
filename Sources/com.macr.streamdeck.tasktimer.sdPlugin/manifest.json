@@ -24,7 +24,7 @@
   "Category": "Task Timer",
   "CategoryIcon": "categoryIcon",
   "URL": "https://github.com/macr/streamdeck-tasktimer",
-  "Version": "1.3.0",
+  "Version": "1.3.1",
   "OS": [
     {
       "Platform": "mac",
