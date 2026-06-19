@@ -176,11 +176,13 @@ class Timer {
             clearInterval(this.countdown)
         }
 
+        this.updateBackground()
         this.countdown = setInterval(function () {
             console.log('tick')
 
             this.remainingSec--
             this.updateTitle(this.remainingSec)
+            this.updateBackground()
             if (this.remainingSec <= 0) {
                 this.finishTimer(this.context)
             }
@@ -281,6 +283,37 @@ class Timer {
         const ss = ('00' + (sec % 60)).slice(-2)
         $SD.api.setTitle(this.context, mm + ':' + ss)
     }
+
+    updateBackground() {
+        $SD.api.setImage(this.context, new SvgUrl(getRunningColor(this.remainingSec, this.config.timerSec)).getUrl())
+    }
+}
+
+const runningColorStart = {r: 0, g: 255, b: 0}
+const runningColorEnd = {r: 255, g: 0, b: 0}
+
+function getRunningColor(remainingSec, totalSec) {
+    const progress = getElapsedRatio(remainingSec, totalSec)
+    return rgbToHex({
+        r: interpolateColorChannel(runningColorStart.r, runningColorEnd.r, progress),
+        g: interpolateColorChannel(runningColorStart.g, runningColorEnd.g, progress),
+        b: interpolateColorChannel(runningColorStart.b, runningColorEnd.b, progress),
+    })
+}
+
+function getElapsedRatio(remainingSec, totalSec) {
+    if (totalSec <= 0) {
+        return 1
+    }
+    return Math.min(Math.max((totalSec - remainingSec) / totalSec, 0), 1)
+}
+
+function interpolateColorChannel(startValue, endValue, progress) {
+    return Math.round(startValue + ((endValue - startValue) * progress))
+}
+
+function rgbToHex(rgb) {
+    return '#' + [rgb.r, rgb.g, rgb.b].map((channel) => channel.toString(16).padStart(2, '0')).join('')
 }
 
 class SvgUrl {
