@@ -43,15 +43,11 @@ const action = {
             this.timers[ctx] = new Timer(jsn);
         } else {
             this.timers[ctx].updateSettings(jsn.payload.settings);
+            this.timers[ctx].render();
         }
     },
     onWillDisappear: function (jsn) {
-        let ctx = jsn.context;
-        let timer = this.timers[ctx];
-        if (timer) {
-            timer.cleanup();
-            delete this.timers[ctx];
-        }
+        console.log('onWillDisappear', jsn.context);
     },
     onKeyDown: function (jsn) {
         let ctx = jsn.context
@@ -286,6 +282,28 @@ class Timer {
 
     updateBackground() {
         $SD.api.setImage(this.context, new SvgUrl(getRunningColor(this.remainingSec, this.config.timerSec)).getUrl())
+    }
+
+    render() {
+        switch (this.status) {
+            case timerStatus.STANDBY:
+                $SD.api.setImage(this.context, '')
+                this.updateTitle(this.config.timerSec)
+                break
+            case timerStatus.RUNNING:
+            case timerStatus.PAUSED:
+                this.updateTitle(this.remainingSec)
+                this.updateBackground()
+                break
+            case timerStatus.FINISHED:
+                this.updateTitle(0)
+                if (!this.config.alarmBlinkEnabled) {
+                    this.updateBackground()
+                }
+                break
+            default:
+                break
+        }
     }
 }
 
